@@ -1,0 +1,23 @@
+# Version control / CI metadata
+.git
+.github
+
+# Build output — rebuilt inside the image
+bin
+obj
+
+# Runtime-generated content (must NOT ship in the image):
+# - App_Data: multipart form buffer dir created at startup
+# - wwwroot/uploads: user/course files and lesson videos
+App_Data
+wwwroot/uploads
+
+# Local scratch / IDE state
+artifacts
+.vs
+.vscode
+*.user
+
+# Docker files themselves are not needed in the build context
+Dockerfile
+.dockerignore
