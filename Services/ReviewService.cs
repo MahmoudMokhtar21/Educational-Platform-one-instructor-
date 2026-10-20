@@ -118,6 +118,8 @@ namespace Educatinal_Platform.Services
             var createdReview =
                 await _reviewRepo.CreateAsync(review);
 
+            await RefreshCourseRatingAsync(courseId);
+
             return _mapper.Map<ReviewResponseDto>(
                 createdReview);
         }
@@ -190,6 +192,8 @@ namespace Educatinal_Platform.Services
             await _reviewRepo.UpdateAsync(
                 reviewId,
                 review);
+
+            await RefreshCourseRatingAsync(review.CourseId);
         }
 
         public async Task DeleteAsync(
@@ -208,6 +212,19 @@ namespace Educatinal_Platform.Services
                     "You can only delete your own review.");
 
             await _reviewRepo.DeleteAsync(reviewId);
+            await RefreshCourseRatingAsync(review.CourseId);
+        }
+
+        private async Task RefreshCourseRatingAsync(string courseId)
+        {
+            var course = await _courseRepo.GetByIdAsync(courseId);
+            if (course == null) return;
+
+            var reviews = await _reviewRepo.GetByCourseIdAsync(courseId);
+            course.TotalReviews = reviews.Count;
+            course.AverageRating = reviews.Count == 0 ? 0 : (decimal)reviews.Average(review => review.Rating);
+            course.UpdatedAt = DateTime.UtcNow;
+            await _courseRepo.UpdateAsync(courseId, course);
         }
     }
 }

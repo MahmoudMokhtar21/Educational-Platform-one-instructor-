@@ -6,6 +6,8 @@
 
         public string CourseId { get; set; } = string.Empty;
 
+        public string AccessType { get; set; } = string.Empty;
+
         public DateTime EnrolledAt { get; set; }
 
         public decimal ProgressPercent { get; set; }

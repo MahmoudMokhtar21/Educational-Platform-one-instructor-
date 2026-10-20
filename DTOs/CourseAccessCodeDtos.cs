@@ -1,0 +1,7 @@
+namespace Educatinal_Platform.DTOs;
+
+public sealed class GenerateCourseAccessCodeRequest { public string CourseId { get; set; } = string.Empty; }
+public sealed class RedeemCourseAccessCodeRequest { public string Code { get; set; } = string.Empty; }
+public sealed class GeneratedCourseAccessCodeDto { public string Id { get; set; } = string.Empty; public string CourseId { get; set; } = string.Empty; public string CourseTitle { get; set; } = string.Empty; public string Code { get; set; } = string.Empty; public string MaskedCode { get; set; } = string.Empty; public DateTime CreatedAt { get; set; } public DateTime ExpiresAt { get; set; } public string Status { get; set; } = string.Empty; }
+public sealed class CourseAccessCodeListItemDto { public string Id { get; set; } = string.Empty; public string CourseId { get; set; } = string.Empty; public string CourseTitle { get; set; } = string.Empty; public string MaskedCode { get; set; } = string.Empty; public DateTime CreatedAt { get; set; } public DateTime ExpiresAt { get; set; } public DateTime? RedeemedAt { get; set; } public string? RedeemedByStudentId { get; set; } public string Status { get; set; } = string.Empty; public bool CanRevoke { get; set; } }
+public sealed class CourseAccessCodeRedemptionResult { public bool Success { get; set; } public string? ErrorCode { get; set; } public string Message { get; set; } = string.Empty; public string? EnrollmentId { get; set; } public string AccessType { get; set; } = "Sequential"; }

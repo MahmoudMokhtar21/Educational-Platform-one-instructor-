@@ -5,6 +5,7 @@
         public string Id { get; set; } = string.Empty;
         public string StudentId { get; set; } = string.Empty;
         public string CourseId { get; set; } = string.Empty;
+        public string AccessType { get; set; } = string.Empty;
 
         // course data (embadded)
         public string CourseTitle { get; set; } = string.Empty;

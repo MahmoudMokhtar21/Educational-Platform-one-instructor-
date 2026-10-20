@@ -1,4 +1,4 @@
-﻿// Repositories/IEnrollmentRepository.cs
+// Repositories/IEnrollmentRepository.cs
 
 using Educatinal_Platform.Models;
 using MongoDB.Bson;
@@ -12,6 +12,7 @@ namespace EduPlatformAPI.Repositories
         Task<Enrollment> CreateAsync(Enrollment enrollment);
         Task<Enrollment?> GetByIdAsync(string id);
         Task<Enrollment?> GetByStudentAndCourseAsync(string studentId, string courseId);
+        Task<Enrollment?> GetByCourseAccessCodeIdAsync(string courseAccessCodeId);
         Task<List<Enrollment>> GetByStudentIdAsync(string studentId);
         Task<List<Enrollment>> GetByCourseIdAsync(string courseId);
         Task UpdateAsync(string id, Enrollment enrollment);
@@ -27,6 +28,7 @@ namespace EduPlatformAPI.Repositories
         Task<Enrollment?> GetActiveByStudentAndCourseAsync(
             string studentId,
             string courseId);
+        Task<long> CountAsync(string? status = null);
     }
     public class EnrollmentRepository : IEnrollmentRepository
     {
@@ -56,6 +58,11 @@ namespace EduPlatformAPI.Repositories
             return await _enrollments
                 .Find(e => e.StudentId == studentId && e.CourseId == courseId)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<Enrollment?> GetByCourseAccessCodeIdAsync(string courseAccessCodeId)
+        {
+            return await _enrollments.Find(e => e.CourseAccessCodeId == courseAccessCodeId).FirstOrDefaultAsync();
         }
 
         public async Task<List<Enrollment>> GetByStudentIdAsync(string studentId)
@@ -163,6 +170,14 @@ namespace EduPlatformAPI.Repositories
                     e.CourseId == courseId &&
                     e.Status == "active")
                 .FirstOrDefaultAsync();
+        }
+
+        public Task<long> CountAsync(string? status = null)
+        {
+            var filter = string.IsNullOrWhiteSpace(status)
+                ? Builders<Enrollment>.Filter.Empty
+                : Builders<Enrollment>.Filter.Eq(enrollment => enrollment.Status, status);
+            return _enrollments.CountDocumentsAsync(filter);
         }
     }
 }

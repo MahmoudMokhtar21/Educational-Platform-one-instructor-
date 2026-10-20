@@ -13,7 +13,9 @@ namespace Educatinal_Platform.Models
         public string Slug { get; set; } = string.Empty; // زي "aspnet-core-course"
         public string Description { get; set; } = string.Empty;
         public string? ShortDescription { get; set; }
-        public decimal Price { get; set; } = 0; // 0 = free 
+        public decimal Price { get; set; } = 0; // Legacy/basic price retained for existing consumers.
+        public decimal? BasicPrice { get; set; }
+        public decimal? FullAccessPrice { get; set; }
 
         public string? ThumbnailUrl { get; set; }
         public string? TrailerUrl { get; set; }
@@ -29,10 +31,14 @@ namespace Educatinal_Platform.Models
         public DateTime? PublishedAt { get; set; }
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-       
+        // Kept as the primary category for legacy MongoDB documents and API consumers.
+        // New courses also persist every assignment in Categories.
         public CategoryEmbedded? Category { get; set; }
 
-       
+        // A course may belong to more than one category. Existing documents that only
+        // contain Category remain valid and are normalized by CourseService when read.
+        public List<CategoryEmbedded> Categories { get; set; } = new();
+
         public List<string> Tags { get; set; } = new();
 
         public int TotalStudents { get; set; } = 0;

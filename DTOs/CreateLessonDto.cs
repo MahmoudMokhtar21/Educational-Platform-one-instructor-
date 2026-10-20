@@ -7,6 +7,8 @@ namespace Educatinal_Platform.DTOs
         [Required]
         public string Title { get; set; } = string.Empty;
 
+        public string? TrackId { get; set; }
+
         public string? ContentText { get; set; }
 
         public IFormFile? Video { get; set; }

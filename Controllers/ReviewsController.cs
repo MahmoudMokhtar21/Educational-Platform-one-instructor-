@@ -22,6 +22,7 @@
             }
 
             // 1. Get all reviews for a course
+            [AllowAnonymous]
             [HttpGet("courses/{courseId}/reviews")]
             public async Task<IActionResult> GetCourseReviews(
                 string courseId)
@@ -34,6 +35,7 @@
             }
 
             // 2. Get review by ID
+            [AllowAnonymous]
             [HttpGet("reviews/{id}")]
             public async Task<IActionResult> GetReview(
                 string id)

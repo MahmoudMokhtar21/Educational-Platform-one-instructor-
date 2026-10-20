@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Educatinal_Platform.Models
@@ -11,6 +11,12 @@ namespace Educatinal_Platform.Models
 
         public string StudentId { get; set; } = string.Empty;
         public string CourseId { get; set; } = string.Empty;
+
+        // Present only for an enrollment granted by a one-time admin access code.
+        public string? CourseAccessCodeId { get; set; }
+
+        // Null is intentionally treated as Full for legacy enrollments created before plans existed.
+        public string? AccessType { get; set; }
 
         public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
         public DateTime? CompletedAt { get; set; }

@@ -10,6 +10,7 @@ namespace Educatinal_Platform.Models
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
         public string CourseId { get; set; } = string.Empty; 
+        public string? TrackId { get; set; }
         public int OrderIndex { get; set; }
         public string Title { get; set; } = string.Empty;
         public string? ContentText { get; set; }

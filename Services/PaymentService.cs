@@ -1,69 +1,81 @@
-﻿namespace Educatinal_Platform.Services;
-using Stripe;
+namespace Educatinal_Platform.Services;
+
+/// <summary>
+/// Provider-neutral checkout boundary. Enrollment remains the owner of course
+/// access; payment providers only create a checkout attempt or, in development,
+/// simulate a confirmed payment through an explicit server endpoint.
+/// </summary>
 public interface IPaymentService
 {
-    Task<PaymentIntentResult> CreatePaymentIntentAsync(
-        decimal amount,
-        string currency,
-        string studentId,
-        string courseId);
+    string Provider { get; }
+    bool IsMock { get; }
+    bool RequiresBillingPhone { get; }
+    string Currency { get; }
+
+    Task<PaymentCheckoutResult> CreateCheckoutAsync(
+        PaymentCheckoutRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<PaymentProviderConfirmation> ConfirmDevelopmentPaymentAsync(
+        PaymentCheckoutRequest request,
+        CancellationToken cancellationToken = default);
 }
 
-public class PaymentIntentResult
+public sealed class PaymentCheckoutRequest
 {
-    public string PaymentIntentId { get; set; } = string.Empty;
-
-    public string ClientSecret { get; set; } = string.Empty;
+    public string PaymentReference { get; init; } = string.Empty;
+    public string StudentId { get; init; } = string.Empty;
+    public string CourseId { get; init; } = string.Empty;
+    // Copied from the server-owned transaction; providers do not decide entitlement.
+    public string AccessType { get; init; } = string.Empty;
+    public string CourseSlug { get; init; } = string.Empty;
+    public string CourseTitle { get; init; } = string.Empty;
+    public decimal Amount { get; init; }
+    public long AmountCents { get; init; }
+    public string Currency { get; init; } = string.Empty;
+    public PaymentCustomer Customer { get; init; } = new();
 }
 
-public class PaymentService : IPaymentService
+public sealed class PaymentCustomer
 {
-    private readonly IConfiguration _configuration;
+    public string Email { get; init; } = string.Empty;
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
+    public string? PhoneNumber { get; init; }
+}
 
-    public PaymentService(IConfiguration configuration)
+public sealed class PaymentCheckoutResult
+{
+    public string Provider { get; init; } = string.Empty;
+    public bool IsMock { get; init; }
+    public string? CheckoutUrl { get; init; }
+    public string? ProviderOrderId { get; init; }
+    public string? ProviderIntentionId { get; init; }
+    public string? ProviderIntegrationId { get; init; }
+}
+
+public sealed class PaymentProviderConfirmation
+{
+    public string Provider { get; init; } = string.Empty;
+    public string ProviderTransactionId { get; init; } = string.Empty;
+    public string? ProviderOrderId { get; init; }
+    public long AmountCents { get; init; }
+    public string Currency { get; init; } = string.Empty;
+    public bool IsSuccessful { get; init; }
+    public bool IsFinalFailure { get; init; }
+}
+
+/// <summary>
+/// A known, safe error that can be returned to API consumers without exposing
+/// provider credentials or transport details.
+/// </summary>
+public sealed class PaymentCheckoutException : InvalidOperationException
+{
+    public PaymentCheckoutException(string code, string message)
+        : base(message)
     {
-        _configuration = configuration;
+        Code = code;
     }
 
-    public async Task<PaymentIntentResult> CreatePaymentIntentAsync(
-        decimal amount,
-        string currency,
-        string studentId,
-        string courseId)
-    {
-        var secretKey =
-            _configuration["Stripe:SecretKey"];
-
-        if (string.IsNullOrWhiteSpace(secretKey))
-            throw new InvalidOperationException(
-                "Stripe Secret Key is not configured.");
-
-        StripeConfiguration.ApiKey = secretKey;
-
-        var options = new PaymentIntentCreateOptions
-        {
-            Amount = (long)(amount * 100),
-            Currency = currency,
-            PaymentMethodTypes = new List<string>
-                {
-                    "card"
-                },
-            Metadata = new Dictionary<string, string>
-            {
-                { "StudentId", studentId },
-                { "CourseId", courseId }
-            }
-        };
-
-        var service = new PaymentIntentService();
-
-        var paymentIntent =
-            await service.CreateAsync(options);
-
-        return new PaymentIntentResult
-        {
-            PaymentIntentId = paymentIntent.Id,
-            ClientSecret = paymentIntent.ClientSecret
-        };
-    }
+    public string Code { get; }
 }

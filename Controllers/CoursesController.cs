@@ -23,9 +23,15 @@ namespace Educatinal_Platform.Controllers
        
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetCourses([FromQuery] int page = 1, [FromQuery] int limit = 10)
+        public async Task<IActionResult> GetCourses(
+            [FromQuery] int page = 1,
+            [FromQuery] int limit = 10,
+            [FromQuery] string? search = null,
+            [FromQuery] string? category = null,
+            [FromQuery] string? level = null,
+            [FromQuery] string? sort = null)
         {
-            var result = await _courseService.GetPublishedCoursesAsync(page, limit);
+            var result = await _courseService.GetPublishedCoursesAsync(page, limit, search, category, level, sort);
             return Ok(result);
         }
        
@@ -36,7 +42,8 @@ namespace Educatinal_Platform.Controllers
         public async Task<IActionResult> GetCourse(string slug)
         {
             var studentId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
-            var course = await _courseService.GetCourseDetailAsync(slug, studentId);
+            var isAdmin = User.IsInRole("admin");
+            var course = await _courseService.GetCourseDetailAsync(slug, studentId, isAdmin);
 
             if (course == null)
                 return NotFound(new
@@ -48,6 +55,27 @@ namespace Educatinal_Platform.Controllers
         }
 
       
+        [Authorize(Roles = "admin")]
+        [HttpGet("admin")]
+        public async Task<IActionResult> GetAdminCourses(
+            [FromQuery] int page = 1,
+            [FromQuery] int limit = 20,
+            [FromQuery] string? search = null,
+            [FromQuery] string? category = null,
+            [FromQuery] string? level = null,
+            [FromQuery] string? sort = null)
+        {
+            return Ok(await _courseService.GetAdminCoursesAsync(page, limit, search, category, level, sort));
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpGet("admin/{id}")]
+        public async Task<IActionResult> GetAdminCourse(string id)
+        {
+            var course = await _courseService.GetAdminCourseAsync(id);
+            return course == null ? NotFound(new { message = "Course not found" }) : Ok(course);
+        }
+
         [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<IActionResult> CreateCourse([FromForm] CreateCourseDto dto)
